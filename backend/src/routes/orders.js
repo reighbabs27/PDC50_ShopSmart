@@ -1,10 +1,33 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { orderSchema } from '../validators/schemas.js';
+import { canReadOrder } from '../lib/auth.js';
+import { requireCustomer } from '../middleware/auth.js';
+import { orderIdSchema, orderSchema } from '../validators/schemas.js';
+
 const router = Router();
 
-router.post('/', async (request, response, next) => {
+function serializeOrder(order) {
+  return {
+    id: order.id,
+    customerName: order.customerName,
+    email: order.email,
+    address: order.address,
+    status: order.status,
+    total: Number(order.total),
+    createdAt: order.createdAt,
+    items: (order.items || []).map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      productName: item.product?.name,
+      quantity: item.quantity,
+      unitPrice: Number(item.unitPrice)
+    }))
+  };
+}
+
+// Every order belongs to the signed-in customer who placed it.
+router.post('/', requireCustomer, async (request, response, next) => {
   try {
     const parsed = orderSchema.safeParse(request.body);
     if (!parsed.success) return response.status(422).json({ error: { code: 'INVALID_ORDER', message: 'Check the customer and cart information.', details: parsed.error.flatten() } });
@@ -29,15 +52,45 @@ router.post('/', async (request, response, next) => {
       }
       return transaction.order.create({
         data: {
-          customerName: parsed.data.customerName, email: parsed.data.email, address: parsed.data.address, total,
+          customerId: request.customer.id,
+          customerName: parsed.data.customerName,
+          email: request.customer.email,
+          address: parsed.data.address,
+          total,
           items: { create: normalizedItems.map((item) => ({ productId: item.productId, quantity: item.quantity, unitPrice: item.product.price })) }
         },
-        include: { items: true }
+        include: { items: { include: { product: true } } }
       });
     });
-    response.status(201).json({ ...order, total: Number(order.total), items: order.items.map((item) => ({ ...item, unitPrice: Number(item.unitPrice) })) });
+    response.status(201).json(serializeOrder(order));
   } catch (error) { next(error); }
 });
 
-// WEEK 4 IMPROVEMENT: Associate orders with authenticated users and add a protected GET route.
+// The signed-in customer's own orders only.
+router.get('/', requireCustomer, async (request, response, next) => {
+  try {
+    const orders = await prisma.order.findMany({
+      where: { customerId: request.customer.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { items: { include: { product: true } } }
+    });
+    response.json({ orders: orders.map(serializeOrder) });
+  } catch (error) { next(error); }
+});
+
+// Ownership is checked on the server. Another customer's order returns 404 rather
+// than 403, so the API does not reveal which order numbers exist.
+router.get('/:id', requireCustomer, async (request, response, next) => {
+  try {
+    const parsedId = orderIdSchema.safeParse(request.params.id);
+    if (!parsedId.success) return response.status(400).json({ error: { code: 'INVALID_ORDER_ID', message: 'Order ID must be a positive integer.' } });
+    const order = await prisma.order.findUnique({ where: { id: parsedId.data }, include: { items: { include: { product: true } } } });
+    if (!canReadOrder(order, request.customer)) {
+      return response.status(404).json({ error: { code: 'ORDER_NOT_FOUND', message: 'No order with this number exists for your account.' } });
+    }
+    response.json(serializeOrder(order));
+  } catch (error) { next(error); }
+});
+
 export default router;

@@ -1,6 +1,6 @@
 {
   "name": "shopsmart-backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,9 +9,12 @@
     "lint": "eslint .",
     "test": "node --test",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev --name initial_schema",
+    "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "db:seed:catalog": "node prisma/seed-catalog.js"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",

@@ -95,9 +95,19 @@ export default function AssistantPage() {
 
         {!loading && result && (
           <div className="assistant-result-body">
+            {result.provider && (
+              <p className={`provider-badge ${result.provider.live ? 'live' : 'simulated'}`} data-testid="provider-label">
+                {result.provider.label}
+              </p>
+            )}
+
             <div className="assistant-bubble">
               <p>{result.answer}</p>
             </div>
+
+            {result.provider?.notice && (
+              <StatusMessage>{result.provider.notice}</StatusMessage>
+            )}
 
             {result.recommendedProducts && result.recommendedProducts.length > 0 && (
               <div className="assistant-section">

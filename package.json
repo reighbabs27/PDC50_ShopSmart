@@ -1,8 +1,11 @@
 {
   "name": "shopsmart-starter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev": "concurrently -n FRONTEND,BACKEND -c cyan,magenta \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
     "build": "npm run build --workspace frontend",
@@ -11,7 +14,11 @@
     "db:generate": "npm run db:generate --workspace backend",
     "db:migrate": "npm run db:migrate --workspace backend",
     "db:seed": "npm run db:seed --workspace backend",
-    "db:studio": "npm run db:studio --workspace backend"
+    "db:studio": "npm run db:studio --workspace backend",
+    "db:deploy": "npm run db:deploy --workspace backend",
+    "db:status": "npm run db:status --workspace backend",
+    "db:seed:catalog": "npm run db:seed:catalog --workspace backend",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

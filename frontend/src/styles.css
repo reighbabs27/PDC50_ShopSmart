@@ -88,3 +88,16 @@ form { display: grid; gap: 1rem; }
   .toolbar, .product-grid { grid-template-columns: 1fr; }
   .cart-item { grid-template-columns: 1fr; }
 }
+
+/* Assistant provider label: tells the viewer whether a live AI call was made. */
+.provider-badge {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+.provider-badge.live { color: #047857; background: #ecfdf5; }
+.provider-badge.simulated { color: #92400e; background: #fffbeb; }

@@ -1,4 +1,4 @@
-# ShopSmart — Quality & Deployment Release
+# ShopSmart — v1.1.0 AWS Deployment Release
 
 PDC50 Final Laboratory Activity • Quality & Deployment Guided Challenge  
 **Student / Developer:** Reighfer Joshua V. Bondoc  
@@ -9,7 +9,9 @@ PDC50 Final Laboratory Activity • Quality & Deployment Guided Challenge
 
 ## 1. Project Overview
 
-ShopSmart is a full-stack e-commerce classroom application built with a React (Vite) frontend, Express.js REST API backend, and PostgreSQL database managed through Prisma ORM. It features a complete customer shopping journey including catalog search and filtering, responsive shopping cart with `localStorage` persistence, stock-controlled simulated checkout, and a grounded AI product assistant powered by the Google Gemini API with deterministic rule-based fallback.
+ShopSmart is a full-stack e-commerce classroom application built with a React (Vite) frontend, Express.js REST API backend, and PostgreSQL database managed through Prisma ORM. It features a complete customer shopping journey including catalog search and filtering, responsive shopping cart with `localStorage` persistence, stock-controlled simulated checkout, a grounded AI product assistant (Google Gemini or a clearly labeled mock adapter, with a verified catalog fallback), and customer sign-in so each simulated order is private to the customer who placed it.
+
+**AWS deployment (v1.1.0):** see `SUBMISSION_AWS_DEPLOYMENT.md` for the submission index, `docs/AWS_DEPLOYMENT_PLAN.md` for the architecture decision and runbook, and `deploy/` for the server files.
 
 ---
 
@@ -33,9 +35,12 @@ PORT=3000
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
 
-# Optional AI Provider (Server-only secret)
-GEMINI_API_KEY=""
-GEMINI_MODEL="gemini-1.5-flash"
+# Assistant provider: mock (labeled simulation), none (catalog rules only) or gemini
+AI_PROVIDER=mock
+# GEMINI_API_KEY=""            # server-only secret, only with instructor approval
+
+# Production-only settings (see deploy/api.env.example)
+# HOST=127.0.0.1  TRUST_PROXY=true  REQUIRE_HTTPS=true  COOKIE_SECURE=true  COOKIE_SAMESITE=lax
 ```
 > **Security Note:** `GEMINI_API_KEY` and `DATABASE_URL` remain strictly server-side and are excluded from Git via `.gitignore`. If no API key is provided, the assistant uses the built-in deterministic catalog fallback.
 
@@ -63,18 +68,20 @@ From the project root (`PDC50_ShopSmart`):
 # Install workspace dependencies
 npm install
 
-# Apply committed migrations without wiping existing data (Production workflow)
-npm run db:migrate --workspace backend   # or: cd backend && npx prisma migrate deploy
+# Development: create/apply migrations locally
+npm run db:migrate
+# Deployed database: apply committed migrations only, never resets data
+npm run db:deploy
 ```
 
-> **Warning:** Do not run `npm run db:seed` if you wish to preserve existing order history and custom transactions.
+> **Warning:** `npm run db:seed` deletes every order, customer and product (it refuses to run with `NODE_ENV=production`). On a database you want to keep, use `npm run db:seed:catalog`, which only adds missing starter products.
 
 ### Step 3: Run Baseline Quality Checks
 Run linting, automated unit/integration tests, and production build in one command:
 ```bash
 npm run check
 ```
-* Expected Result: All frontend lint, backend lint, 8 Vitest tests, 13 Node test runner tests, and Vite production bundle build succeed with 0 errors.
+* Expected Result: frontend lint, backend lint, 8 Vitest tests, 39 Node test runner tests, and the Vite production build all succeed with 0 errors.
 
 ### Step 4: Start the Application
 Run both frontend and backend concurrently:
@@ -83,7 +90,8 @@ npm run dev
 ```
 * **Frontend:** [http://localhost:5173](http://localhost:5173)
 * **Backend API:** [http://localhost:3000](http://localhost:3000)
-* **Health Endpoint:** [http://localhost:3000/api/health](http://localhost:3000/api/health)
+* **Health Endpoint:** [http://localhost:3000/api/health](http://localhost:3000/api/health) (checks the database too)
+* **Sign in:** open `/account` and create a fictional test account; checkout requires it.
 
 ---
 
@@ -95,8 +103,12 @@ npm run dev
 | `npm run check` | Runs full quality pipeline: linting, tests, and frontend build |
 | `npm run test` | Runs frontend Vitest tests and backend Node tests |
 | `npm run build` | Compiles frontend production assets into `frontend/dist` |
-| `npm run db:migrate` | Runs committed Prisma migrations (`prisma migrate dev / deploy`) |
-| `npm run db:seed` | Seeds initial catalog products (destructive reset) |
+| `npm run db:migrate` | Development only: `prisma migrate dev` |
+| `npm run db:deploy` | Deployed DB: `prisma migrate deploy` (applies committed migrations, no reset) |
+| `npm run db:status` | Shows applied / pending migrations |
+| `npm run db:seed` | **Destructive** reset to the starter catalog (blocked in production) |
+| `npm run db:seed:catalog` | Adds missing starter products only; never touches orders or customers |
+| `npm run smoke -- <url>` | Runs the hosted customer-journey checks and writes `docs/evidence/smoke-*.md` |
 | `npm run db:studio` | Opens Prisma Studio web GUI on port 5555 |
 
 ---
@@ -108,3 +120,8 @@ Full documentation and evidence records are located in the `docs/` folder:
 * **Test Record & Evidence:** `docs/TEST_RECORD.md`
 * **Deployment Plan & Architecture:** `docs/DEPLOYMENT_PLAN.md`
 * **Guided Challenge Master Submission:** `SUBMISSION_QUALITY_DEPLOYMENT_CHALLENGE.md`
+* **AWS Deployment Submission Index:** `SUBMISSION_AWS_DEPLOYMENT.md`
+* **AWS Deployment Plan & Decision Record:** `docs/AWS_DEPLOYMENT_PLAN.md`
+* **AWS Hosted Verification Record:** `docs/AWS_VERIFICATION_RECORD.md`
+* **Release Note v1.1.0:** `docs/RELEASE_NOTE_v1.1.0.md`
+* **Deployment diagram:** `docs/diagrams/aws-deployment.png`

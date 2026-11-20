@@ -1,0 +1,24 @@
+flowchart LR
+    U["Visitor's browser<br/>React SPA + HttpOnly session cookie"]
+
+    subgraph AWS["AWS account · Region ap-southeast-1 (Singapore)"]
+      R["Security group shopsmart-web-sg<br/>Inbound 443 + 80: anywhere<br/>Inbound 22: team IP only<br/>3000 and 5432: NOT opened"]
+      subgraph EC2["EC2 instance · Ubuntu 24.04 · Elastic IP · public DNS name"]
+        N["nginx :443 / :80<br/>TLS (Let's Encrypt)<br/>serves Vite build<br/>SPA rewrite → index.html"]
+        A["Express API (systemd)<br/>127.0.0.1:3000 · internal only<br/>sessions · order ownership<br/>validation · assistant control"]
+        M["Mock provider adapter<br/>(in-process, labeled in UI)"]
+        P[("PostgreSQL 16<br/>127.0.0.1:5432 · internal only<br/>Product · Customer<br/>Session · Order")]
+        B["pg_dump backups<br/>/var/backups/shopsmart"]
+      end
+    end
+
+    G["Optional approved AI provider<br/>(Gemini, server-only key)"]
+
+    U -- "HTTPS 443: / and /assets/*" --> N
+    U -- "HTTPS 443: /api/*" --> N
+    R -.- N
+    N -- "proxy to 127.0.0.1:3000" --> A
+    A -- "Prisma · DATABASE_URL" --> P
+    P -.-> B
+    A -- "public product fields only" --> M
+    A -. "HTTPS outbound, only if AI_PROVIDER=gemini" .-> G

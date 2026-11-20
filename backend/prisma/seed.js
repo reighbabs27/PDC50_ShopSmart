@@ -1,22 +1,26 @@
+// DESTRUCTIVE development seed: deletes ALL orders, sessions, customers and products,
+// then inserts the starter catalog. Never use it to "fix" a deployed database.
+// For a hosted database use `npm run db:seed:catalog` (non-destructive) instead.
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { STARTER_PRODUCTS } from './catalog.js';
 
-const products = [
-  { name: 'Wireless Mouse', description: 'Quiet wireless mouse with adjustable sensitivity and USB receiver.', category: 'Accessories', emoji: '🖱️', price: 650, stock: 12 },
-  { name: 'Compact Mechanical Keyboard', description: 'Hot-swappable compact keyboard with tactile switches.', category: 'Accessories', emoji: '⌨️', price: 1850, stock: 8 },
-  { name: 'USB-C Study Lamp', description: 'Adjustable desk lamp with three brightness levels.', category: 'Study', emoji: '💡', price: 900, stock: 10 },
-  { name: '1080p Webcam', description: 'Full HD webcam with privacy cover and built-in microphone.', category: 'Video', emoji: '📷', price: 1450, stock: 6 },
-  { name: 'Laptop Stand', description: 'Foldable aluminum stand for laptops up to 16 inches.', category: 'Study', emoji: '💻', price: 1200, stock: 9 },
-  { name: 'USB Headset', description: 'Over-ear headset with noise-reducing boom microphone.', category: 'Audio', emoji: '🎧', price: 1350, stock: 7 }
-];
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+  console.error('Refusing to run the destructive seed with NODE_ENV=production.');
+  console.error('It would delete every order and customer. Use `npm run db:seed:catalog` instead.');
+  process.exit(1);
+}
+
+const prisma = new PrismaClient();
 
 async function main() {
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.customer.deleteMany();
   await prisma.product.deleteMany();
-  await prisma.product.createMany({ data: products });
-  console.log(`Seeded ${products.length} ShopSmart products.`);
+  await prisma.product.createMany({ data: STARTER_PRODUCTS });
+  console.log(`Seeded ${STARTER_PRODUCTS.length} ShopSmart products (all previous data removed).`);
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; })

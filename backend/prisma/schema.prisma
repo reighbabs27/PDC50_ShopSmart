@@ -21,15 +21,45 @@ model Product {
   orderItems  OrderItem[]
 }
 
+// A ShopSmart customer (fictional test data only). This is APPLICATION identity,
+// unrelated to AWS IAM identities that manage cloud resources.
+model Customer {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+  sessions     Session[]
+}
+
+// Server-side session. `id` stores a SHA-256 hash of the cookie token, so a
+// leaked database row cannot be replayed as a cookie.
+model Session {
+  id         String   @id
+  customerId Int
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
 model Order {
   id           Int         @id @default(autoincrement())
+  // Nullable on purpose: orders created before accounts existed keep their
+  // rows (data preservation) but have no owner, so no customer can read them.
+  customerId   Int?
   customerName String
   email        String
   address      String
   status       String      @default("PENDING")
   total        Decimal     @db.Decimal(10, 2)
   createdAt    DateTime    @default(now())
+  customer     Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items        OrderItem[]
+
+  @@index([customerId])
 }
 
 model OrderItem {

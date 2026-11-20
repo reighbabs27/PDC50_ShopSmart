@@ -6,6 +6,8 @@
 **Student / Developer:** Reighfer Joshua V. Bondoc  
 **Date:** November 15, 2026  
 
+> **Superseded for the AWS deployment activity.** This earlier plan (Activity 4 of the Quality & Deployment challenge) compared generic hosts. The AWS deployment that was chosen and built is described in `docs/AWS_DEPLOYMENT_PLAN.md`.
+
 ---
 
 ## 1. System Architecture Diagram

@@ -1,0 +1,27 @@
+# Alternative layout B only (Amplify Hosting for the frontend + EC2 API + RDS).
+# The chosen layout A (single EC2 host) does not use this file.
+#
+# Amplify console settings this build depends on:
+#   - Environment variable AMPLIFY_MONOREPO_APP_ROOT = frontend
+#   - Environment variable VITE_API_URL = https://<api-domain>/api   (public value, rebuild after changing)
+#   - Rewrite: source </^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>
+#              target /index.html  type 200 (Rewrite)   -> lets /account, /orders/12 refresh correctly
+version: 1
+applications:
+  - appRoot: frontend
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            # The lockfile and workspaces live at the repository root.
+            - cd .. && npm ci --no-audit --no-fund
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - ../node_modules/**/*
