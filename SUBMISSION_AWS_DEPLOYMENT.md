@@ -3,25 +3,25 @@
 **PDC50 Full Stack AI Application Development** · ShopSmart AWS Deployment Learning Guide (13 Nov 2026)
 **Developer:** Reighfer Joshua V. Bondoc · BSIT-4A · solo
 **Repository:** https://github.com/reighbabs27/PDC50_ShopSmart
-**Site URL:** ☐ FILL `https://shopsmart-<a-b-c-d>.sslip.io`
+**Site URL:** https://shopsmart-13-210-209-254.sslip.io
 
 ## Required submission items
 
 | Guide asks for | Submitted as | Status |
 |---|---|---|
-| Site URL | Top of this file | ☐ fill after deploy |
-| Updated project / repository | This repository, tag `v1.1.0` | ✅ code done · ☐ commit, tag, push |
+| Site URL | Top of this file | ✅ |
+| Updated project / repository | This repository, tag `v1.1.0` | ✅ pushed, tag `v1.1.0` = `7331c33` |
 | Deployment diagram | `docs/diagrams/aws-deployment.png` (source `.mmd`) | ✅ |
 | Short decision record for the chosen architecture | `docs/AWS_DEPLOYMENT_PLAN.md` §2 | ✅ |
-| Redacted screenshots or logs | `docs/evidence/` (smoke reports + screenshots) | ☐ after deploy |
-| Release note | `docs/RELEASE_NOTE_v1.1.0.md` | ✅ · ☐ fill URL/commit |
-| AWS account plan | Plan §4 | ☐ fill from Billing |
+| Redacted screenshots or logs | `docs/evidence/` (2 smoke reports, server check log, screenshots) | ✅ |
+| Release note | `docs/RELEASE_NOTE_v1.1.0.md` | ✅ |
+| AWS account plan | Plan §4: Free plan, US$110.23 credits, 171 days left (`docs/evidence/account-free-plan-credits.jpg`) | ✅ |
 | Service names | EC2, EBS, Elastic IP, security group, AWS Budgets (plan §5) | ✅ |
-| Region | ap-southeast-1 (Singapore) | ✅ |
-| Tested URLs | Smoke evidence file lists every URL | ☐ after deploy |
-| Code version | `/api/health` → `version` + `commit`; recorded in smoke evidence | ☐ after deploy |
-| Local or hosted release | Release note header | ☐ tick one |
-| The two improvements and retests | `docs/AWS_VERIFICATION_RECORD.md` §F | ✅ written · ☐ confirm against exam, fill results |
+| Region | ap-southeast-2 (Sydney) | ✅ |
+| Tested URLs | Smoke evidence file lists every URL | ✅ |
+| Code version | `/api/health` → `version` + `commit`; recorded in smoke evidence | ✅ 1.1.0 / 7331c33 |
+| Local or hosted release | Release note header | ✅ Hosted |
+| The two improvements and retests | `docs/AWS_VERIFICATION_RECORD.md` §F | ✅ retested (☐ confirm the two match your exam) |
 
 ## Guide section → where it is handled
 
@@ -29,7 +29,7 @@
 |---|---|---|
 | What the deployed app must do | Products, cart, assistant, sign-in, simulated order, private orders | Smoke test, verification §A–B |
 | The four parts and their jobs | nginx-served Vite build · Express on EC2 · PostgreSQL on the same host · mock provider adapter | Diagram, plan §3 |
-| Understand the AWS account | Plan, credits, expiry, MFA, IAM identity, budget, resource register | Plan §4–5 (☐ fill) |
+| Understand the AWS account | Plan, credits, expiry, MFA, IAM identity, budget, resource register | Plan §4–5 ✅ |
 | Choose an architecture | Decision record: single EC2 host; Layout B supported | Plan §2 |
 | Frontend hosting / public config | `VITE_API_URL=/api`, SPA rewrite in nginx, `amplify.yml` for B | Smoke "Direct visit" rows |
 | API host: processes and network | systemd unit, `HOST=127.0.0.1`, ports table, security group | Smoke port probes, verification §C |
@@ -40,11 +40,12 @@
 | Use symptoms to locate a problem | Symptom table adapted to this layout | Plan §10 |
 | End of the demo | Cleanup steps incl. releasing the Elastic IP | Plan §11 |
 
-## What only you can do (in order)
+## Status (20 November 2026)
 
-1. **Pull the new code into git**: review the changes, then `npm install`, `npm run db:migrate`, `npm run check`, try `/account` locally. Commit, `git tag v1.1.0`, push.
-2. **Account checks** in the AWS console: plan, credits, expiry, root MFA, an IAM identity for daily work, a zero-spend budget. Screenshot (redacted).
-3. **Launch** per plan §9 (Ubuntu 24.04, ap-southeast-1, security group per §6, Elastic IP), then run `deploy/setup-ec2.sh`.
-4. **Verify**: `npm run smoke -- https://<your-domain>`, then the manual checks B1–B11, C1–C5, D1–D4.
-5. **Fill** every ☐ in the plan, verification record, release note and this file. Commit the evidence.
-6. **After grading**: clean up per plan §11 and screenshot the remaining credits.
+Done: code pushed and tagged `v1.1.0` · account checked (Free plan, US$110.23 credits, 171 days left, Sydney only) · zero-spend budget · EC2 + Elastic IP + security group in ap-southeast-2 · `setup-ec2.sh` run (HTTPS via Let's Encrypt) · smoke 27/27 twice (before and after reboot) · all manual checks B1–B11 · server checks C1–C5 · D1–D4 · `npm run check` passed · evidence in `docs/evidence/`.
+
+Open items for the owner:
+1. **Root MFA is not enabled** (`AccountMFAEnabled: 0`). Enable it and add a redacted screenshot to `docs/evidence/`.
+2. **Confirm** the two improvements in verification §F match the two your exam names.
+3. **After grading:** clean up per plan §11 (only `Project=ShopSmart` resources, not AutoHub) and screenshot the remaining credits.
+4. Verify the AWS Budgets email (sent to your AUF address) so the alert can reach you.

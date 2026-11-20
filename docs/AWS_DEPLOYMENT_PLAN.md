@@ -6,7 +6,7 @@
 **Release:** ShopSmart v1.1.0
 **Plan date:** 20 November 2026
 
-> Items marked **☐ FILL** can only be completed from inside the AWS account (plan type, credits, URLs, screenshots). Everything else in this plan is already implemented in the repository.
+> Filled in after the hosted deployment on 20 November 2026. Open owner actions: enable root MFA (§4) and clean up after grading (§11).
 
 ---
 
@@ -26,7 +26,7 @@
 
 ## 2. Decision record: architecture
 
-**Decision:** Layout A, **single EC2 host** (nginx + Express + PostgreSQL on one Ubuntu 24.04 instance) in **ap-southeast-1 (Singapore)**.
+**Decision:** Layout A, **single EC2 host** (nginx + Express + PostgreSQL on one Ubuntu 24.04 instance) in **ap-southeast-2 (Sydney)**.
 
 **Status:** Accepted for the classroom demonstration. Layout B is documented and supported by the code as the alternative.
 
@@ -93,14 +93,14 @@ The guide states that newer accounts on the **Free plan** get US$100 in credits 
 
 | Decision | Why it matters | Evidence | Value |
 |---|---|---|---|
-| Free or Paid plan; credit balance; credit expiry | Decides whether the demo can run without a bill and when it must end | Redacted screenshot of Billing and Cost Management → plan and credits page | **☐ FILL** plan: ____ · credits left: US$____ · expires: ____ |
-| Region | Resources in other Regions are easy to miss during cleanup | Resource register (section 5) | ap-southeast-1 (Singapore) for every resource |
-| Expected duration | An always-running instance and volume consume credits even with no visitors | Demo dates and removal plan | **☐ FILL** created ____ · demo ____ · removal by ____ |
-| Budget alert | Early warning before credits are exhausted | Screenshot of the budget (no account numbers) | **☐ FILL** zero-spend or US$5 budget created: yes / no |
+| Free or Paid plan; credit balance; credit expiry | Decides whether the demo can run without a bill and when it must end | Redacted screenshot of Billing and Cost Management → plan and credits page | plan: **Free plan** ("Your free plan account does not get charged") · credits left: **US$110.23** on 20 Nov 2026 before launch · **171 days remaining on 20 Nov 2026 (plan ends about 10 May 2027)** · evidence `docs/evidence/account-free-plan-credits.jpg` |
+| Region | Resources in other Regions are easy to miss during cleanup | Resource register (section 5) | ap-southeast-2 (Sydney) for every resource |
+| Expected duration | An always-running instance and volume consume credits even with no visitors | Demo dates and removal plan | created **20 Nov 2026** · demo: class presentation · removal by: **end of grading** (see §11) |
+| Budget alert | Early warning before credits are exhausted | Screenshot of the budget (no account numbers) | zero-spend budget `shopsmart-zero-spend` (US$0.01/month, email alert at 100%) created: **yes** · `docs/evidence/account-budgets.jpg` |
 
 ### Access ownership
-- Root user: MFA enabled, root credentials never shared, not used for daily work. **☐ FILL** MFA screenshot (redacted).
-- Daily work uses a separate IAM identity with only the access the task needs (EC2 in one Region and Billing read). **☐ FILL** identity name.
+- Root user: root credentials never shared. **Finding on 20 Nov 2026: `aws iam get-account-summary` reports `AccountMFAEnabled: 0`, so root MFA is not yet enabled.** Action for the owner: enable an MFA device for the root user (IAM → Security credentials) and add a redacted screenshot.
+- Daily work identity: the account has **no IAM users**; console and CloudShell work ran as the role session `AccountFullAccessRole` (from `aws sts get-caller-identity`). That role has full access, which is broader than this task needs. A least-privilege IAM identity (EC2 in ap-southeast-2 + Billing read) is the recommended improvement before any longer-lived use.
 - **AWS identity ≠ ShopSmart identity.** IAM decides who may manage AWS resources. ShopSmart's own sign-in identifies a *customer*, and Express decides whether that customer may read an order. Giving someone AWS access does not let them read another customer's order, and the ownership check in the API is what enforces that.
 
 ---
@@ -111,15 +111,19 @@ Keep this table current while building. No credentials, account IDs or passwords
 
 | # | Service | Resource / name | Region | Owner | Purpose | Created | Planned removal | Cost note |
 |---|---|---|---|---|---|---|---|---|
-| 1 | EC2 instance | `shopsmart-demo` (t3.micro or t3.small, Ubuntu 24.04) | ap-southeast-1 | R. J. Bondoc | nginx + Express + PostgreSQL | ☐ | ☐ | Charged per running hour; **stop** it between sessions |
-| 2 | EBS volume | root volume of #1 (gp3, 20 GiB) | ap-southeast-1 | R. J. Bondoc | OS, app, database files, backups | ☐ | with #1 | Charged while it exists, **even when the instance is stopped** |
-| 3 | Elastic IP | `shopsmart-eip` | ap-southeast-1 | R. J. Bondoc | Stable address for DNS and the certificate | ☐ | release after #1 | Public IPv4 addresses are billed hourly; an unattached one still costs |
-| 4 | Security group | `shopsmart-web-sg` | ap-southeast-1 | R. J. Bondoc | 443/80 from anywhere, 22 from team IP | ☐ | with #1 | none |
-| 5 | Key pair | `shopsmart-key` | ap-southeast-1 | R. J. Bondoc | SSH (private key stays on my laptop) | ☐ | delete after #1 | none |
-| 6 | AWS Budgets | `shopsmart-zero-spend` | global | R. J. Bondoc | Alert before credits run out | ☐ | after cleanup | ☐ check |
-| 7 | DNS name | `shopsmart-<eip-with-dashes>.sslip.io` (or own domain) | n/a | R. J. Bondoc | Hostname for the TLS certificate | ☐ | n/a | none |
+| 1 | EC2 instance | `shopsmart-demo` i-034dd01c285ae5170 (t3.micro, Ubuntu 24.04, no key pair) | ap-southeast-2 | R. J. Bondoc | nginx + Express + PostgreSQL | 2026-11-20 | after grading | Charged per running hour; **stop** it between sessions |
+| 2 | EBS volume | root volume of #1 (gp3, 20 GiB) | ap-southeast-2 | R. J. Bondoc | OS, app, database files, backups | 2026-11-20 | with #1 (DeleteOnTermination=true) | Charged while it exists, **even when the instance is stopped** |
+| 3 | Elastic IP | `shopsmart-eip` 13.210.209.254 | ap-southeast-2 | R. J. Bondoc | Stable address for DNS and the certificate | 2026-11-20 | release after #1 | Public IPv4 addresses are billed hourly; an unattached one still costs |
+| 4 | Security group | `shopsmart-web-sg` sg-04a2df633d4542b97 | ap-southeast-2 | R. J. Bondoc | 443/80 from anywhere; 22 only from the EC2 Instance Connect prefix list | 2026-11-20 | with #1 | none |
+| 5 | Key pair | not created: EC2 Instance Connect pushes a 60-second key per session | ap-southeast-2 | R. J. Bondoc | Administration | n/a | n/a | none |
+| 6 | AWS Budgets | `shopsmart-zero-spend` | global | R. J. Bondoc | Alert before credits run out | 2026-11-20 | after cleanup | none |
+| 7 | DNS name | `shopsmart-13-210-209-254.sslip.io` | n/a | R. J. Bondoc | Hostname for the TLS certificate | 2026-11-20 | n/a | none |
 
 Check every Region in the console before closing the demo (EC2 → Global view).
+
+**Not part of ShopSmart:** the same Region also holds the SAM10 AutoHub instance (t3.small), its Elastic IP and security group `autohub-web`, and the `autohub-monthly` budget. Do **not** delete those during ShopSmart cleanup; only resources tagged `Project=ShopSmart` belong to this demo.
+
+**How it was launched:** from AWS CloudShell with the AWS CLI. The instance's user data waits until the Elastic IP is attached, clones the repository and runs `deploy/setup-ec2.sh shopsmart-13-210-209-254.sslip.io <owner-email> v1.1.0`. Setup finished with `USERDATA_EXIT=0`.
 
 ---
 
@@ -129,7 +133,7 @@ Check every Region in the console before closing the demo (EC2 → Global view).
 |---|---|---|
 | 443 (HTTPS) | Internet | The only entry point for the site and the API |
 | 80 (HTTP) | Internet | Redirects to 443 and answers Let's Encrypt renewals. Serves no app content |
-| 22 (SSH) | **My IP only** (`x.x.x.x/32`), or replaced by EC2 Instance Connect / Session Manager | Administration |
+| 22 (SSH) | **EC2 Instance Connect prefix list only** (`com.amazonaws.ap-southeast-2.ec2-instance-connect`). During verification a temporary /32 rule for CloudShell was added and then revoked. | Administration |
 | 3000 (Express) | **Nobody.** Bound to `127.0.0.1`, not in the security group | Internal hop behind nginx |
 | 5432 (PostgreSQL) | **Nobody.** Ubuntu default listens on localhost, not in the security group | The browser must never connect to the database |
 
@@ -201,7 +205,7 @@ EC2 does not start Express by itself after a reboot. `deploy/systemd/shopsmart-a
 
 This is our own implementation of the targets above, not a copy of console clicks.
 
-1. **Account checks (☐ FILL):** plan, credits, expiry, root MFA, IAM identity, zero-spend budget. Region: ap-southeast-1.
+1. **Account checks (done 20 Nov; root MFA still to be enabled by the owner):** plan, credits, expiry, root MFA, IAM identity, zero-spend budget. Region: ap-southeast-2 (Sydney). The Free plan limits this account to Sydney, so Singapore was not available.
 2. **Launch:** Ubuntu Server 24.04 LTS, t3.micro (or t3.small), 20 GiB gp3, key pair `shopsmart-key`, security group per section 6. Tag every resource `Project=ShopSmart`, `Owner=RJBondoc`.
 3. **Elastic IP:** allocate and associate. Hostname: `shopsmart-<a-b-c-d>.sslip.io`.
 4. **Setup:** `ssh ubuntu@<eip>` →
@@ -238,5 +242,5 @@ Record the old and new value for every setting you change, and change one thing 
 3. **Release the Elastic IP** (an unattached public IPv4 is still billed).
 4. Delete the security group and key pair.
 5. EC2 Global view: no ShopSmart resources in any Region.
-6. Screenshot Billing: credits remaining after cleanup. **☐ FILL**
+6. Screenshot Billing: credits remaining after cleanup. ☐ after cleanup
 7. Update the resource register with actual removal dates.

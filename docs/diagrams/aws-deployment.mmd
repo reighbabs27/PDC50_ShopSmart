@@ -1,8 +1,8 @@
 flowchart LR
     U["Visitor's browser<br/>React SPA + HttpOnly session cookie"]
 
-    subgraph AWS["AWS account · Region ap-southeast-1 (Singapore)"]
-      R["Security group shopsmart-web-sg<br/>Inbound 443 + 80: anywhere<br/>Inbound 22: team IP only<br/>3000 and 5432: NOT opened"]
+    subgraph AWS["AWS account · Region ap-southeast-2 (Sydney)"]
+      R["Security group shopsmart-web-sg<br/>Inbound 443 + 80: anywhere<br/>Inbound 22: EC2 Instance Connect prefix list only<br/>3000 and 5432: NOT opened"]
       subgraph EC2["EC2 instance · Ubuntu 24.04 · Elastic IP · public DNS name"]
         N["nginx :443 / :80<br/>TLS (Let's Encrypt)<br/>serves Vite build<br/>SPA rewrite → index.html"]
         A["Express API (systemd)<br/>127.0.0.1:3000 · internal only<br/>sessions · order ownership<br/>validation · assistant control"]

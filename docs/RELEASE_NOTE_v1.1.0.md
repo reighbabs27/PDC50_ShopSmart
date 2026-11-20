@@ -2,9 +2,9 @@
 
 **Date:** 20 November 2026 · **Developer:** Reighfer Joshua V. Bondoc (solo) · **Course:** PDC50 / BSIT-4A
 **Previous release:** v1.0.0-rc1 (local release candidate, 15 November 2026)
-**Target:** single EC2 host in ap-southeast-1 (see `docs/AWS_DEPLOYMENT_PLAN.md`)
-**Release type:** ☐ Hosted at ☐ FILL URL · ☐ Local only (state why)
-**Commit / tag:** ☐ FILL (`git tag v1.1.0` before deploying; `/api/health` reports it)
+**Target:** single EC2 host in ap-southeast-2 (Sydney) (see `docs/AWS_DEPLOYMENT_PLAN.md`)
+**Release type:** ☑ Hosted at https://shopsmart-13-210-209-254.sslip.io · ☐ Local only
+**Commit / tag:** `7331c33` / `v1.1.0` (reported by `/api/health`)
 
 ## What is new
 
@@ -40,8 +40,8 @@
 
 ## Tests
 - Backend: assistant (8), assistant provider (13), auth and ownership (9), validation (9). Frontend: cart (8).
-- ☐ FILL: result of `npm run check` on the release commit.
-- ☐ FILL: hosted smoke result `__/26` (`docs/evidence/…`).
+- `npm run check` on `v1.1.0` (run in AWS CloudShell, Node 20): lint clean; backend 39/39 pass; frontend 8/8 pass; Vite build OK.
+- Hosted smoke: **27/27** (`docs/evidence/smoke-2026-11-20T15-12-37-381Z.md`) and **27/27** after an instance reboot (`docs/evidence/smoke-2026-11-20T15-17-00-726Z.md`).
 
 ## Known limitations
 - Single EC2 host: one point of failure; backups are on the same instance.
